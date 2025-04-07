@@ -1,0 +1,286 @@
+:root {
+    /* Size and spacing controls */
+    --grid-max-width: 40vw;          /* Maximum width relative to viewport */
+    --grid-min-width: 300px;         /* Minimum width in pixels */
+    --grid-padding: clamp(12px, 2vw, 20px);  /* Internal grid padding */
+    --grid-margin: max(20px, 5vw);   /* Minimum margin around grid */
+    --grid-aspect-ratio: 1.6;        /* Default aspect ratio (width/height) */
+    
+    /* Color generation settings */
+    --main-hue-range: 20;      /* Range for main colors in degrees */
+    --accent-hue-range: 45;    /* Range for accent color in degrees */
+    --base-saturation: 90;     /* Base saturation percentage */
+    --base-lightness: 65;      /* Base lightness percentage */
+    
+    /* Dynamic colors - These will be set by JavaScript */
+    --palette-base-hue: 0;     /* Will be set dynamically */
+    --bg-color: hsl(var(--palette-base-hue), 15%, 7%);
+    --surface-color: hsl(var(--palette-base-hue), 15%, 12%);
+    --text-color: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.7);
+    --accent-color: #bb86fc;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: var(--grid-margin);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--bg-color);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: var(--text-color);
+    transition: background-color 0.5s ease;
+    cursor: pointer;
+}
+
+.color-grid {
+    width: clamp(var(--grid-min-width), var(--grid-max-width), 90vw);
+    aspect-ratio: var(--grid-aspect-ratio);
+    display: grid;
+    gap: 0.5rem;
+    padding: var(--grid-padding);
+    background-color: var(--surface-color);
+    border-radius: clamp(10px, 2vw, 20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: default; /* Reset cursor for grid */
+}
+
+/* Layout-specific styles */
+.palette-container[data-layout="horizontal"] {
+    min-height: clamp(280px, 45vh, 450px);
+}
+
+.palette-container[data-layout="grid"] {
+    min-height: clamp(200px, 40vh, 400px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    :root {
+        --grid-max-width: 85vw;
+        --grid-aspect-ratio: 1.2;
+        --grid-margin: 15px;
+    }
+    
+    .color-grid {
+        aspect-ratio: 1/1;
+        width: 95%;
+    }
+    
+    .palette-container {
+        width: 95%;
+        min-height: clamp(180px, 35vh, 300px);
+    }
+    
+    .palette-container[data-layout="horizontal"] {
+        min-height: clamp(220px, 40vh, 350px);
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --grid-max-width: 90vw;
+        --grid-aspect-ratio: 1;
+        --grid-margin: 10px;
+    }
+
+    .color-grid {
+        min-height: 300px;
+    }
+
+    .color-info {
+        padding: clamp(4px, 0.8vw, 6px);
+    }
+
+    .color-hex {
+        font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+    }
+}
+
+/* Adjustments for larger screens */
+@media (min-width: 1600px) {
+    :root {
+        --grid-max-width: 35vw;
+        --grid-aspect-ratio: 1.8;
+        --grid-margin: max(30px, 8vw);
+    }
+}
+
+/* Adjustments for very tall screens */
+@media (min-aspect-ratio: 2/1) {
+    :root {
+        --grid-max-width: 50vw;
+    }
+}
+
+@media (max-aspect-ratio: 1/1.5) {
+    :root {
+        --grid-max-width: 85vw;
+        --grid-aspect-ratio: 0.8;
+    }
+}
+
+.color-box {
+    border-radius: clamp(6px, 1.2vw, 12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    color: var(--text-color);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    cursor: pointer; /* Show pointer cursor for color boxes */
+}
+
+.color-box:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.color-box:active {
+    transform: scale(0.98);
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0.95);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.color-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.2) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.color-box:hover::before {
+    opacity: 1;
+}
+
+.color-info {
+    position: relative;
+    z-index: 2;
+    width: calc(100% - 16px);
+    margin: 8px;
+    padding: clamp(4px, 1vw, 8px);
+    border-radius: 6px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+}
+
+.color-hex {
+    display: block;
+    font-size: 1.05em;
+    font-family: "Segoe UI"; /*'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Inter", "Helvetica Neue", sans-serif' ;*/
+    letter-spacing: 0.01em;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+    text-transform: uppercase;
+}
+
+.controls {
+    position: fixed;
+    bottom: clamp(15px, 4vw, 30px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    z-index: 100;
+}
+
+.refresh-btn {
+    padding: clamp(8px, 1.5vw, 10px) clamp(16px, 3vw, 24px);
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: clamp(0.8rem, 1.2vw, 1rem);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(187, 134, 252, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(187, 134, 252, 0.4);
+    background-color: #c7a1ff;
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
+}
+
+.refresh-btn svg {
+    width: clamp(14px, 1.8vw, 18px);
+    height: clamp(14px, 1.8vw, 18px);
+}
+
+/* Copy feedback animation */
+.copy-feedback {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(1px);
+    color: rgba(255, 255, 255, 0.95);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Inter", sans-serif;
+    font-weight: 450;
+    letter-spacing: 0.04em;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+} 
