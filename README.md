@@ -1,4 +1,4 @@
-# Dynamic-Color-Palette
+# Dynamic Color Palette
 
 https://masoudmaani.github.io/Dynamic-Color-Palette/
 
